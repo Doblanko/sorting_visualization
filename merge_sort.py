@@ -1,56 +1,76 @@
-import pygame
-import bars
-from main import clock, gameDisplay, display_height, display_width, bar_width, colors
+import pygame, time
+import board
 
-def merge_sort(board):
-    if len(board) > 1:
-        middle = len(board)/2
-        left_half = board[middle:]
-        right_half = board[:middle]
+sleep_time = 1
 
-        merge_sort(left_half)
-        merge_sort(right_half)
+def merge_sort(bars, game_board):
+    if len(bars) > 1:
+        # show section being looked at
+        color(game_board, bars, board.colors["green"])
+        time.sleep(sleep_time)
 
+        middle = int(len(bars)/2)
+        left_half = bars[:middle]
+        right_half = bars[middle:]
 
-        ### start of visualization code
-        for i in range(left_half):
-            left_half[i].set_color(color("green"))
-        for i in range(right_half):
-            right_half[i].set_color(color("blue"))
+        # color halves
+        color(game_board, left_half, board.colors["blue"])
+        color(game_board, right_half, board.colors["red"])
+        time.sleep(sleep_time)
+        # uncolor
+        color(game_board, left_half, board.colors["black"])
+        color(game_board, right_half, board.colors["black"])
+        time.sleep(sleep_time)
 
-        # update board
-        # todo: make a generic function to update board
-        gameDisplay.fill(colors["white"])
-        # redraw all the bars not being moved
-        for i in range(self.number_of_bars):
-            self.bars[i].draw()
-        #### end of visualization code
+        merge_sort(left_half, game_board)
+        merge_sort(right_half, game_board)
 
         i = 0
         j = 0
-        k = 0
+
+        # need to store the heights in a temporary variable. bars, left_half, and right_half only reference bar
+        # objects (they don't store them). If you change bars during the sorting, you will change the actual objects
+        # and subsequently change left_half and right_half since they reference the same objects
+
+        temp_height = []
         while i < len(left_half) and j < len(right_half):
-            ### start of visualization code
-            left_half[i].set_color(colors("red"))
-            right_half[j].set_color(colors("red"))
-            ### end of visualization code
-            
-            if left_half[i] <= right_half[j]:
-                board[k] = left_half[i]
+            if left_half[i].height <= right_half[j].height:
+                temp_height.append(left_half[i].height)
                 i = i + 1
             else:
-                board[k] = right_half[j]
+                temp_height.append(right_half[j].height)
                 j = j + 1
-            k = k + 1
 
         # next two while statements account for one half being larger than the other
         while i < len(left_half):
-            board[k] = left_half[i]
+            temp_height.append(left_half[i].height)
             i = i + 1
-            k = k + 1
 
         while j < len(right_half):
-            board[k] = right_half[j]
+            temp_height.append(right_half[j].height)
             j = j + 1
+
+        # change the bar objects after comparison complete
+        k = 0
+        for bar in bars:
+            bar.height = temp_height[k]
             k = k + 1
-    print("Merging ", alist)
+
+        # redraw bars
+        game_board.redraw()
+        time.sleep(sleep_time)
+
+def color(game_board, bars, color):
+    for bar in bars:
+        bar.set_color(color)
+
+    game_board.redraw()
+
+
+# only temporarily changes the color of a bar
+# todo: make a separate redraw and recolor function. Recolor just draws over the old bar. Redraw draws the whole
+#  section again after merging.
+def draw_color():
+    for i in range(temp_bars.number_of_bars):
+        temp_bars[i].draw()
+
